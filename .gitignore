@@ -1,0 +1,16 @@
+*.exe
+*.ilk
+*.ipch
+*.idc
+*.obj
+*.pch
+*.res
+*.pdb
+*.pro.user
+*.sdf
+*.sln
+*.suo
+*.vcproj
+*.vcxproj*
+ui_*.h
+moc_*.cpp
