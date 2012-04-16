@@ -262,27 +262,38 @@ void ConsoleView::scrollConsoleWindowVertically(SHORT distance)
 {
     qDebug() << "scrollConsoleWindowVertically" << distance;
     qDebug() << "~~~new window top" << m_conScreenBufferInfo.srWindow.Top;
-    SMALL_RECT &window = m_conScreenBufferInfo.srWindow;
-    SHORT windowHeight = ::height(window);
+
+    const SHORT windowWidth = ::width(m_conScreenBufferInfo.srWindow);
+    const SHORT windowHeight = ::height(m_conScreenBufferInfo.srWindow);
     if (distance < 0) {
         // scroll down
-        int dy = distance * m_charCellSize.height();
-        QRect sourceRect = m_pixmap.rect().adjusted(0, dy, 0, 0);
-        m_pixmap.scroll(0, dy, sourceRect);
-        update();
+        if (-distance < windowHeight) {
+            int dy = distance * m_charCellSize.height();
+            QRect rect = m_pixmap.rect().adjusted(0, dy, 0, 0);
+            m_pixmap.scroll(0, dy, rect);
+            rect.adjust(0, dy, 0, dy);
+            update(rect);
+        }
+
+        COORD regionStart = {m_conScreenBufferInfo.srWindow.Left,
+                             m_conScreenBufferInfo.srWindow.Bottom + distance + 1};
+        COORD regionEnd = {m_conScreenBufferInfo.srWindow.Right,
+                           m_conScreenBufferInfo.srWindow.Bottom};
+        onConsoleRegionUpdate(regionStart, regionEnd);
     } else if (distance > 0) {
         // scroll up
         if (distance < windowHeight) {
             int dy = distance * m_charCellSize.height();
-            QRect sourceRect = m_pixmap.rect().adjusted(0, 0, 0, -dy);
-            m_pixmap.scroll(0, dy, sourceRect);
+            QRect rect = m_pixmap.rect().adjusted(0, 0, 0, -dy);
+            m_pixmap.scroll(0, dy, rect);
+            rect.adjust(0, dy, 0, dy);
+            update(rect);
         }
 
-        COORD regionStart = {0, m_conScreenBufferInfo.srWindow.Top};
-        COORD regionEnd = {windowHeight,
+        COORD regionStart = {m_conScreenBufferInfo.srWindow.Left,
+                             m_conScreenBufferInfo.srWindow.Top};
+        COORD regionEnd = {m_conScreenBufferInfo.srWindow.Right,
                            m_conScreenBufferInfo.srWindow.Top + distance - 1};
         onConsoleRegionUpdate(regionStart, regionEnd);
-
-        update();   // ###
     }
 }
