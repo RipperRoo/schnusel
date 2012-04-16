@@ -100,7 +100,7 @@ void ConsoleView::onConsoleLayoutChanged()
     } else {
         if (oldWindow.Top != newWindow.Top)
             scrollConsoleWindowVertically(oldWindow.Top - newWindow.Top);
-        if (oldWindow.Left != oldWindow.Left)
+        if (oldWindow.Left != newWindow.Left)
             scrollConsoleWindowHorizontally(oldWindow.Left - newWindow.Left);
     }
 
@@ -256,14 +256,44 @@ QColor ConsoleView::translateBackgroundColor(unsigned short attributes)
 void ConsoleView::scrollConsoleWindowHorizontally(SHORT distance)
 {
     qDebug() << "scrollConsoleWindowHorizontally" << distance;
+    const SHORT windowWidth = ::width(m_conScreenBufferInfo.srWindow);
+
+    if (distance < 0) {
+        // scroll right
+        if (-distance < windowWidth) {
+            int dx = distance * m_charCellSize.width();
+            QRect rect = m_pixmap.rect().adjusted(0, 0, dx, 0);
+            m_pixmap.scroll(dx, 0, rect);
+            rect.adjust(dx, 0, dx, 0);
+            update(rect);
+        }
+
+        COORD regionStart = {m_conScreenBufferInfo.srWindow.Left,
+                             m_conScreenBufferInfo.srWindow.Top};
+        COORD regionEnd = {m_conScreenBufferInfo.srWindow.Right + distance + 1,
+                           m_conScreenBufferInfo.srWindow.Bottom};
+        onConsoleRegionUpdate(regionStart, regionEnd);
+    } else if (distance > 0) {
+        // scroll left
+        if (distance < windowWidth) {
+            int dx = distance * m_charCellSize.width();
+            QRect rect = m_pixmap.rect().adjusted(dx, 0, 0, 0);
+            m_pixmap.scroll(dx, 0, rect);
+            rect.adjust(dx, 0, dx, 0);
+            update(rect);
+        }
+
+        COORD regionStart = {m_conScreenBufferInfo.srWindow.Left + distance - 1,
+                             m_conScreenBufferInfo.srWindow.Top};
+        COORD regionEnd = {m_conScreenBufferInfo.srWindow.Right,
+                           m_conScreenBufferInfo.srWindow.Bottom};
+        onConsoleRegionUpdate(regionStart, regionEnd);
+    }
 }
 
 void ConsoleView::scrollConsoleWindowVertically(SHORT distance)
 {
     qDebug() << "scrollConsoleWindowVertically" << distance;
-    qDebug() << "~~~new window top" << m_conScreenBufferInfo.srWindow.Top;
-
-    const SHORT windowWidth = ::width(m_conScreenBufferInfo.srWindow);
     const SHORT windowHeight = ::height(m_conScreenBufferInfo.srWindow);
     if (distance < 0) {
         // scroll down
