@@ -6,6 +6,7 @@
 using namespace std;
 
 ConsoleProcess::ConsoleProcess()
+    : m_pid(0)
 {
 }
 
@@ -80,6 +81,19 @@ bool ConsoleProcess::start()
 QString ConsoleProcess::errorString() const
 {
     return m_errorString;
+}
+
+unsigned long ConsoleProcess::pid()
+{
+    if (!m_pid) {
+        DWORD pid;
+        if (ipcGetConsoleProcessId(&pid)) {
+            m_pid = pid;
+        } else {
+            m_errorString = tr("ipcGetConsoleProcessPid failed");
+        }
+    }
+    return m_pid;
 }
 
 bool ConsoleProcess::ipcWait(const DWORD dwTimeout)
@@ -181,4 +195,18 @@ bool ConsoleProcess::ipcReadConsoleOutput(CHAR_INFO *buf, const COORD &bufferSiz
     s.advancePtr(bufSize);
 
     return true;
+}
+
+bool ConsoleProcess::ipcGetConsoleProcessId(DWORD *pid)
+{
+    SharedMemoryStream s(&m_pSharedMemory);
+    s << IPC_GETCONSOLEPID;
+
+    SetEvent(m_hServerEvent);
+    s.reset();
+    if (!ipcWait())
+        return false;
+
+    s >> *pid;
+    return pid != 0;
 }

@@ -10,6 +10,7 @@ IpcServer::IpcServer(HANDLE hClientEvent, HANDLE hServerEvent, HANDLE hSharedMem
     , m_hSharedMemory(hSharedMemory)
     , m_hStdout(INVALID_HANDLE_VALUE)
     , m_appHwnd(NULL)
+    , m_dwShellPid(0)
 {
     DWORD dw;
     dw = m_pSharedMemory.map(hSharedMemory, FILE_MAP_WRITE, 0, 0, dwSharedMemorySize);
@@ -26,6 +27,7 @@ IpcServer::IpcServer(HANDLE hClientEvent, HANDLE hServerEvent, HANDLE hSharedMem
     m_handleFunctions[IPC_GETCONSOLESCREENBUFFERINFO] = &IpcServer::handleGetConsoleScreenBufferInfo;
     m_handleFunctions[IPC_GETCURRENTCONSOLEFONT] = &IpcServer::handleGetCurrentConsoleFont;
     m_handleFunctions[IPC_READCONSOLEOUTPUT] = &IpcServer::handleReadConsoleOutput;
+    m_handleFunctions[IPC_GETCONSOLEPID] = &IpcServer::handleGetConsoleProcessId;
 }
 
 IpcServer::~IpcServer()
@@ -85,6 +87,7 @@ bool IpcServer::startShell(const wstring &commandLine)
     }
 
     m_hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    m_dwShellPid = pi.dwProcessId;
     return success;
 }
 
@@ -154,4 +157,11 @@ void IpcServer::handleReadConsoleOutput(SharedMemoryStream &s)
     s.advancePtr(bufSize);
 
     delete[] buf;
+}
+
+void IpcServer::handleGetConsoleProcessId(SharedMemoryStream &s)
+{
+    s.reset();
+
+    s << m_dwShellPid;
 }

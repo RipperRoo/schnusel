@@ -15,6 +15,7 @@ public:
 
     bool start();
     QString errorString() const;
+    unsigned long pid();
 
     bool ipcStartShell(const std::wstring &cmdLine);
     void ipcShutDown();
@@ -22,6 +23,7 @@ public:
     bool ipcGetConsoleScreenBufferInfo(CONSOLE_SCREEN_BUFFER_INFO *sbi);
     bool ipcGetCurrentConsoleFont(bool maximumWindow, CONSOLE_FONT_INFO *cfi);
     bool ipcReadConsoleOutput(CHAR_INFO *buffer, const COORD &bufferSize, SMALL_RECT *readRegion);
+    bool ipcGetConsoleProcessId(DWORD *pid);
 
 private:
     bool ipcWait(const DWORD dwTimeout = INFINITE);
@@ -33,4 +35,5 @@ private:
     Handle m_hProcess;
     FileMapView m_pSharedMemory;
     QString m_errorString;
+    unsigned long m_pid;
 };

@@ -22,6 +22,7 @@ private:
     void handleGetConsoleScreenBufferInfo(SharedMemoryStream &s);
     void handleGetCurrentConsoleFont(SharedMemoryStream &s);
     void handleReadConsoleOutput(SharedMemoryStream &s);
+    void handleGetConsoleProcessId(SharedMemoryStream &s);
 
 private:
     HANDLE m_hClientEvent;
@@ -30,6 +31,7 @@ private:
     FileMapView m_pSharedMemory;
     HANDLE m_hStdout;
     HWND m_appHwnd;
+    DWORD m_dwShellPid;
 
     typedef void (IpcServer::*CommandHandler)(SharedMemoryStream &s);
     CommandHandler m_handleFunctions[IPC_COMMAND_COUNT];

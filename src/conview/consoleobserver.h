@@ -4,8 +4,8 @@
 class ConsoleObserver
 {
 public:
-    virtual void onConsoleApplicationStarted(qint64 pid) = 0;
-    virtual void onConsoleApplicationEnded(qint64 pid) = 0;
+    virtual void onConsoleApplicationStarted(unsigned long pid) = 0;
+    virtual void onConsoleApplicationEnded(unsigned long pid) = 0;
     virtual void onConsoleCaretMoved(bool selection, bool visible, const COORD &cursorPos) = 0;
     virtual void onConsoleLayoutChanged() = 0;
     virtual void onConsoleRegionUpdate(const COORD &regionStart, const COORD &regionEnd) = 0;

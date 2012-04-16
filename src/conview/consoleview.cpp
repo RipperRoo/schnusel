@@ -67,12 +67,20 @@ void ConsoleView::resizeEvent(QResizeEvent *e)
     p.drawText(m_pixmap.rect(), Qt::AlignCenter, "CONSOLE VIEW lalala");
 }
 
-void ConsoleView::onConsoleApplicationStarted(qint64 pid)
+void ConsoleView::onConsoleApplicationStarted(unsigned long pid)
 {
+    qDebug() << "onConsoleApplicationStarted" << pid << "shell process:" << m_process->pid();
 }
 
-void ConsoleView::onConsoleApplicationEnded(qint64 pid)
+void ConsoleView::onConsoleApplicationEnded(unsigned long pid)
 {
+    qDebug() << "onConsoleApplicationEnded" << pid;
+    if (pid == m_process->pid()) {
+        m_process->ipcShutDown();
+        QTimer::singleShot(0, this, SLOT(close()));
+        QTimer::singleShot(0, this, SIGNAL(closed()));
+        return;
+    }
 }
 
 void ConsoleView::onConsoleCaretMoved(bool selection, bool visible, const COORD &cursorPos)

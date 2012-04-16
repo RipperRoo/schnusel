@@ -14,7 +14,9 @@ public:
     ~ConsoleView();
 
     QString title() const { return "conview"; }
+
 signals:
+    void closed();
 
 public slots:
     void startProcess();
@@ -24,8 +26,8 @@ protected:
     void resizeEvent(QResizeEvent *e);
 
     // ConsoleObserver implementation
-    void onConsoleApplicationStarted(qint64 pid);
-    void onConsoleApplicationEnded(qint64 pid);
+    void onConsoleApplicationStarted(unsigned long pid);
+    void onConsoleApplicationEnded(unsigned long pid);
     void onConsoleCaretMoved(bool selection, bool visible, const COORD &cursorPos);
     void onConsoleLayoutChanged();
     void onConsoleRegionUpdate(const COORD &regionStart, const COORD &regionEnd);

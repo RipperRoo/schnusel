@@ -22,6 +22,10 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+private:
+    ConsoleView *createConsoleView(QWidget *parent = 0);
+    void closeTab(int idx);
+
 private slots:
     void on_actionNewWindow_triggered();
     void on_actionNewTab_triggered();
@@ -40,6 +44,7 @@ private slots:
     void on_actionZoomOut_triggered();
     void on_actionNormalSize_triggered();
     void on_actionAbout_triggered();
+    void consoleViewClosed();
 
 private:
     Ui::MainWindow *ui;

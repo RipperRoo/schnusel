@@ -22,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent)
     Q_ASSERT(ui->centralWidget->layout() == 0);
     m_stackedLayout = new QStackedLayout;
     ui->centralWidget->setLayout(m_stackedLayout);
-    ConsoleView *view = new ConsoleView;
+    ConsoleView *view = createConsoleView();
     m_stackedLayout->addWidget(view);
     m_tabWidget = new QTabWidget;
     m_stackedLayout->addWidget(m_tabWidget);
@@ -31,6 +31,29 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+ConsoleView *MainWindow::createConsoleView(QWidget *parent)
+{
+    ConsoleView *view = new ConsoleView(parent);
+    connect(view, SIGNAL(closed()), this, SLOT(consoleViewClosed()));
+    return view;
+}
+
+void MainWindow::closeTab(int idx)
+{
+    QWidget *w = m_tabWidget->widget(idx);
+    m_tabWidget->removeTab(idx);
+    delete w;
+    bool singleView = m_tabWidget->count() == 1;
+    ui->actionCloseTab->setEnabled(!singleView);
+    if (singleView) {
+        idx = m_tabWidget->currentIndex();
+        w = m_tabWidget->widget(idx);
+        m_tabWidget->removeTab(idx);
+        idx = m_stackedLayout->addWidget(w);
+        m_stackedLayout->setCurrentIndex(idx);
+    }
 }
 
 void MainWindow::on_actionNewWindow_triggered()
@@ -49,7 +72,7 @@ void MainWindow::on_actionNewTab_triggered()
         Q_CHECK_PTR(consoleView);
         m_tabWidget->addTab(w, consoleView->title());
     }
-    consoleView = new ConsoleView;
+    consoleView = createConsoleView();
     int idx = m_tabWidget->addTab(consoleView, consoleView->title());
     m_tabWidget->setCurrentIndex(idx);
     ui->actionCloseTab->setEnabled(true);
@@ -62,19 +85,7 @@ void MainWindow::on_actionCloseWindow_triggered()
 
 void MainWindow::on_actionCloseTab_triggered()
 {
-    int idx = m_tabWidget->currentIndex();
-    QWidget *w = m_tabWidget->widget(idx);
-    m_tabWidget->removeTab(idx);
-    delete w;
-    bool singleView = m_tabWidget->count() == 1;
-    ui->actionCloseTab->setEnabled(!singleView);
-    if (singleView) {
-        idx = m_tabWidget->currentIndex();
-        w = m_tabWidget->widget(idx);
-        m_tabWidget->removeTab(idx);
-        idx = m_stackedLayout->addWidget(w);
-        m_stackedLayout->setCurrentIndex(idx);
-    }
+    closeTab(m_tabWidget->currentIndex());
 }
 
 void MainWindow::on_actionExit_triggered()
@@ -151,4 +162,24 @@ void MainWindow::on_actionNormalSize_triggered()
 void MainWindow::on_actionAbout_triggered()
 {
 
+}
+
+void MainWindow::consoleViewClosed()
+{
+    if (m_tabWidget->count() == 0) {
+        close();
+    } else {
+        int tabIdx = -1;
+        for (int i = 0; i < m_tabWidget->count(); ++i) {
+            if (m_tabWidget->widget(i) == sender()) {
+                tabIdx = i;
+                break;
+            }
+        }
+        if (tabIdx == -1) {
+            qWarning("Can't find tab to close in consoleViewClosed.");
+            return;
+        }
+        closeTab(tabIdx);
+    }
 }
