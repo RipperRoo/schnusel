@@ -133,10 +133,6 @@ void ConsoleView::onConsoleRegionUpdate(const COORD &regionStart, const COORD &r
     qDebug() << "onConsoleRegionUpdate" << regionStart << regionEnd;
     if (regionStart.X > regionEnd.X || regionStart.Y > regionEnd.Y)
         qWarning("onConsoleRegionUpdate: non-rectangular update region!");
-    COORD aRegionStart = regionStart;
-    COORD aRegionEnd = regionEnd;
-    SMALL_RECT dasVerschisseneWindow = m_conScreenBufferInfo.srWindow;
-    qDebug() << aRegionStart << aRegionEnd << dasVerschisseneWindow;
 
     COORD clippedStart = clippedPoint(regionStart, m_conScreenBufferInfo.srWindow);
     COORD clippedEnd = clippedPoint(regionEnd, m_conScreenBufferInfo.srWindow);
@@ -182,7 +178,7 @@ void ConsoleView::onConsoleRegionUpdate(const COORD &regionStart, const COORD &r
     repaint();  // ### rect
 }
 
-void ConsoleView::onConsoleScrolled(long horizontalDistance, long verticalDistance)
+void ConsoleView::onConsoleScrolled(long /*horizontalDistance*/, long /*verticalDistance*/)
 {
     // don't do anything; handled in onConsoleLayoutChanged
 }
