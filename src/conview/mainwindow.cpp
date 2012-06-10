@@ -25,7 +25,10 @@ MainWindow::MainWindow(QWidget *parent)
     ConsoleView *view = createConsoleView();
     m_stackedLayout->addWidget(view);
     m_tabWidget = new QTabWidget;
+    connect(m_tabWidget, &QTabWidget::currentChanged, this, &MainWindow::onCurrentTabChanged);
+
     m_stackedLayout->addWidget(m_tabWidget);
+    view->setFocus();
 }
 
 MainWindow::~MainWindow()
@@ -181,5 +184,14 @@ void MainWindow::consoleViewClosed()
             return;
         }
         closeTab(tabIdx);
+    }
+}
+
+void MainWindow::onCurrentTabChanged(int idx)
+{
+    if (idx >= 0) {
+        QWidget *widget = m_tabWidget->widget(idx);
+        if (widget)
+            widget->setFocus();
     }
 }

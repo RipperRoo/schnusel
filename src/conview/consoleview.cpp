@@ -10,6 +10,7 @@ ConsoleView::ConsoleView(QWidget *parent)
     , m_process(0)
     , m_fontMetrics(font())
 {
+    setFocusPolicy(Qt::ClickFocus);
     ZeroMemory(&m_conScreenBufferInfo, sizeof(m_conScreenBufferInfo));
 
     QPalette pal = palette();
@@ -63,6 +64,16 @@ void ConsoleView::resizeEvent(QResizeEvent *e)
     p.setPen(palette().foreground().color());
     p.setFont(font());
     p.drawText(m_pixmap.rect(), Qt::AlignCenter, "CONSOLE VIEW lalala");
+}
+
+void ConsoleView::focusInEvent(QFocusEvent *)
+{
+    qDebug() << Q_FUNC_INFO;
+}
+
+void ConsoleView::focusOutEvent(QFocusEvent *)
+{
+    qDebug() << Q_FUNC_INFO;
 }
 
 void ConsoleView::onConsoleApplicationStarted(unsigned long pid)

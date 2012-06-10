@@ -24,6 +24,8 @@ public slots:
 protected:
     void paintEvent(QPaintEvent *e);
     void resizeEvent(QResizeEvent *e);
+    void focusInEvent(QFocusEvent *);
+    void focusOutEvent(QFocusEvent *);
 
     // ConsoleObserver implementation
     void onConsoleApplicationStarted(unsigned long pid);

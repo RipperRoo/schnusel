@@ -45,6 +45,7 @@ private slots:
     void on_actionNormalSize_triggered();
     void on_actionAbout_triggered();
     void consoleViewClosed();
+    void onCurrentTabChanged(int idx);
 
 private:
     Ui::MainWindow *ui;
