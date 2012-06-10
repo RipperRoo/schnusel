@@ -6,6 +6,8 @@ DESTDIR = $$OUT_PWD/../../bin
 
 LIBS += user32.lib
 
+include(../winapitools/use_winapitools.pri)
+
 PRECOMPILED_HEADER = stdafx.h
 
 SOURCES += \
@@ -35,5 +37,3 @@ HEADERS += \
 FORMS += \
     mainwindow.ui \
     profilesdialog.ui
-
-include(../winapitools/use_winapitools.pri)
