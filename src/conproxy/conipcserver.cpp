@@ -48,6 +48,7 @@ void IpcServer::handleCommand()
         WCHAR s[256];
         wsprintf(s, L"CONPROXY doesn't know how to handle command %d.\n", id);
         OutputDebugString(s);
+        MessageBox(NULL, s, L"conproxy error", MB_OK | MB_ICONERROR);
         return;
     }
 
