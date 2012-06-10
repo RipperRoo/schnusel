@@ -76,6 +76,56 @@ void ConsoleView::focusOutEvent(QFocusEvent *)
     qDebug() << Q_FUNC_INFO;
 }
 
+//static INPUT_RECORD toInputRecord(QKeyEvent *e)
+//{
+
+//}
+
+void ConsoleView::keyPressEvent(QKeyEvent *e)
+{
+    keyPressReleaseEvent(e, TRUE);
+}
+
+void ConsoleView::keyReleaseEvent(QKeyEvent *e)
+{
+    keyPressReleaseEvent(e, FALSE);
+}
+
+void ConsoleView::keyPressReleaseEvent(QKeyEvent *e, BOOL keyDown)
+{
+    size_t nRecords = qMax(e->text().count(), 1);
+    INPUT_RECORD *ir = new INPUT_RECORD[nRecords];
+    ZeroMemory(ir, sizeof(INPUT_RECORD) * nRecords);
+    ir[0].EventType = KEY_EVENT;
+    KEY_EVENT_RECORD *ker = &ir[0].Event.KeyEvent;
+    if (e->modifiers() & Qt::ShiftModifier)
+        ker->dwControlKeyState |= SHIFT_PRESSED;
+    if (e->modifiers() & Qt::ControlModifier)
+        ker->dwControlKeyState |= LEFT_CTRL_PRESSED;
+    if (e->modifiers() & Qt::AltModifier)
+        ker->dwControlKeyState |= LEFT_ALT_PRESSED;
+    if (e->modifiers() & Qt::MetaModifier)
+        qDebug() << "keyPressEvent Qt::MetaModifier";
+
+    for (size_t i = 0; i < nRecords; ++i) {
+        if (i != 0)
+            ir[i] = ir[i - 1];
+        ker = &ir[i].Event.KeyEvent;
+        ker->bKeyDown = keyDown;
+        ker->wRepeatCount = 1;
+        if (static_cast<int>(i) < e->text().length())
+            ker->uChar.UnicodeChar = e->text().at(i).unicode();
+        ker->wVirtualScanCode = e->nativeScanCode();
+        ker->wVirtualKeyCode = e->nativeVirtualKey();
+    }
+
+    DWORD dwNumberOfEventsWritten = 0;
+    if (!m_process->ipcWriteConsoleInput(ir, nRecords, &dwNumberOfEventsWritten))
+        qDebug("ipcWriteConsoleInput failed");
+
+    delete[] ir;
+}
+
 void ConsoleView::onConsoleApplicationStarted(unsigned long pid)
 {
     qDebug() << "onConsoleApplicationStarted" << pid << "shell process:" << m_process->pid();

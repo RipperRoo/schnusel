@@ -210,3 +210,46 @@ bool ConsoleProcess::ipcGetConsoleProcessId(DWORD *pid)
     s >> *pid;
     return pid != 0;
 }
+
+bool ConsoleProcess::ipcWriteConsoleInput(const INPUT_RECORD *ir, DWORD nLength, DWORD *pNumberOfEventsWritten)
+{
+    SharedMemoryStream s(&m_pSharedMemory);
+    s << IPC_WRITECONSOLEINPUT
+      << nLength;
+
+    for (DWORD i = 0; i < nLength; ++i) {
+        s << ir[i].EventType;
+        switch (ir[i].EventType) {
+        case FOCUS_EVENT:
+            qWarning("ipcWriteConsoleInput FOCUS_EVENT not implemented.");
+            break;
+        case KEY_EVENT:
+            s << ir[i].Event.KeyEvent.bKeyDown
+              << ir[i].Event.KeyEvent.wRepeatCount
+              << ir[i].Event.KeyEvent.wVirtualKeyCode
+              << ir[i].Event.KeyEvent.wVirtualScanCode
+              << ir[i].Event.KeyEvent.uChar.UnicodeChar
+              << ir[i].Event.KeyEvent.dwControlKeyState;
+            break;
+        case MENU_EVENT:
+            qWarning("ipcWriteConsoleInput MENU_EVENT not implemented.");
+            break;
+        case MOUSE_EVENT:
+            qWarning("ipcWriteConsoleInput MOUSE_EVENT not implemented.");
+            break;
+        case WINDOW_BUFFER_SIZE_EVENT:
+            qWarning("ipcWriteConsoleInput WINDOW_BUFFER_SIZE_EVENT not implemeted.");
+            break;
+        }
+    }
+
+    SetEvent(m_hServerEvent);
+    s.reset();
+    if (!ipcWait())
+        return false;
+
+    bool result;
+    s >> result
+      >> *pNumberOfEventsWritten;
+    return result;
+}

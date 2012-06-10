@@ -24,6 +24,7 @@ public:
     bool ipcGetCurrentConsoleFont(bool maximumWindow, CONSOLE_FONT_INFO *cfi);
     bool ipcReadConsoleOutput(CHAR_INFO *buffer, const COORD &bufferSize, SMALL_RECT *readRegion);
     bool ipcGetConsoleProcessId(DWORD *pid);
+    bool ipcWriteConsoleInput(const INPUT_RECORD *ir, DWORD nLength, DWORD *pNumberOfEventsWritten);
 
 private:
     bool ipcWait(const DWORD dwTimeout = INFINITE);

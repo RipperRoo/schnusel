@@ -23,6 +23,7 @@ private:
     void handleGetCurrentConsoleFont(SharedMemoryStream &s);
     void handleReadConsoleOutput(SharedMemoryStream &s);
     void handleGetConsoleProcessId(SharedMemoryStream &s);
+    void handleWriteConsoleInput(SharedMemoryStream &s);
 
 private:
     HANDLE m_hClientEvent;
@@ -30,6 +31,7 @@ private:
     HANDLE m_hSharedMemory;
     FileMapView m_pSharedMemory;
     HANDLE m_hStdout;
+    HANDLE m_hStdin;
     HWND m_appHwnd;
     DWORD m_dwShellPid;
 

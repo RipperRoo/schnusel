@@ -9,6 +9,7 @@ IpcServer::IpcServer(HANDLE hClientEvent, HANDLE hServerEvent, HANDLE hSharedMem
     , m_hServerEvent(hServerEvent)
     , m_hSharedMemory(hSharedMemory)
     , m_hStdout(INVALID_HANDLE_VALUE)
+    , m_hStdin(INVALID_HANDLE_VALUE)
     , m_appHwnd(NULL)
     , m_dwShellPid(0)
 {
@@ -28,6 +29,7 @@ IpcServer::IpcServer(HANDLE hClientEvent, HANDLE hServerEvent, HANDLE hSharedMem
     m_handleFunctions[IPC_GETCURRENTCONSOLEFONT] = &IpcServer::handleGetCurrentConsoleFont;
     m_handleFunctions[IPC_READCONSOLEOUTPUT] = &IpcServer::handleReadConsoleOutput;
     m_handleFunctions[IPC_GETCONSOLEPID] = &IpcServer::handleGetConsoleProcessId;
+    m_handleFunctions[IPC_WRITECONSOLEINPUT] = &IpcServer::handleWriteConsoleInput;
 }
 
 IpcServer::~IpcServer()
@@ -87,6 +89,7 @@ bool IpcServer::startShell(const wstring &commandLine)
     }
 
     m_hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+    m_hStdin = GetStdHandle(STD_INPUT_HANDLE);
     m_dwShellPid = pi.dwProcessId;
     return success;
 }
@@ -164,4 +167,40 @@ void IpcServer::handleGetConsoleProcessId(SharedMemoryStream &s)
     s.reset();
 
     s << m_dwShellPid;
+}
+
+void IpcServer::handleWriteConsoleInput(SharedMemoryStream &s)
+{
+    DWORD nLength;
+    s >> nLength;
+
+    INPUT_RECORD *ir = new INPUT_RECORD[nLength];
+    for (DWORD i = 0; i < nLength; ++i) {
+        s >> ir[i].EventType;
+        switch (ir[i].EventType) {
+        case FOCUS_EVENT:
+            break;
+        case KEY_EVENT:
+            s >> ir[i].Event.KeyEvent.bKeyDown
+              >> ir[i].Event.KeyEvent.wRepeatCount
+              >> ir[i].Event.KeyEvent.wVirtualKeyCode
+              >> ir[i].Event.KeyEvent.wVirtualScanCode
+              >> ir[i].Event.KeyEvent.uChar.UnicodeChar
+              >> ir[i].Event.KeyEvent.dwControlKeyState;
+            break;
+        case MENU_EVENT:
+            break;
+        case MOUSE_EVENT:
+            break;
+        case WINDOW_BUFFER_SIZE_EVENT:
+            break;
+        }
+    }
+
+    DWORD dwNumberOfEventsWritten = 0;
+    BOOL success = WriteConsoleInput(m_hStdin, ir, nLength, &dwNumberOfEventsWritten);
+    delete[] ir;
+
+    s.reset();
+    s << success << dwNumberOfEventsWritten;
 }

@@ -26,6 +26,9 @@ protected:
     void resizeEvent(QResizeEvent *e);
     void focusInEvent(QFocusEvent *);
     void focusOutEvent(QFocusEvent *);
+    void keyPressEvent(QKeyEvent *e);
+    void keyReleaseEvent(QKeyEvent *e);
+    void keyPressReleaseEvent(QKeyEvent *e, BOOL keyDown);
 
     // ConsoleObserver implementation
     void onConsoleApplicationStarted(unsigned long pid);

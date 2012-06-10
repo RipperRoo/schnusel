@@ -11,7 +11,8 @@ enum IpcCommandId
     IPC_GETCURRENTCONSOLEFONT,
     IPC_READCONSOLEOUTPUT,
     IPC_GETCONSOLEPID,
-    IPC_COMMAND_COUNT
+    IPC_WRITECONSOLEINPUT,
+    IPC_COMMAND_COUNT   // this must be the last entry
 };
 
 //void ipcInit();
