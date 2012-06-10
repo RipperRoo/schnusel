@@ -19,7 +19,7 @@ ConsoleView::ConsoleView(QWidget *parent)
     setAutoFillBackground(true);
 
     QFont f = font();
-    f.setFamily("Lucida Console");
+    f.setFamily("Lucida Console");  // TODO: don't hard code
     f.setPointSize(10);
     setFont(f);
     m_fontMetrics = QFontMetrics(font());
