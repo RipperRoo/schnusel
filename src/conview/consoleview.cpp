@@ -26,9 +26,7 @@ ConsoleView::ConsoleView(QWidget *parent)
     m_charCellSize = QSize(m_fontMetrics.maxWidth(),
                            m_fontMetrics.ascent() + m_fontMetrics.descent() + m_fontMetrics.leading());
 
-    QTimer::singleShot(1000, this, SLOT(startProcess()));
-
-
+    QTimer::singleShot(0, this, SLOT(startProcess()));
     qDebug("ConsoleView::ConsoleView thread: %d", GetCurrentThreadId());
 }
 
