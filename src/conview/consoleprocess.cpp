@@ -50,7 +50,7 @@ bool ConsoleProcess::start()
     wchar_t *buf = new wchar_t[bufsize];
     wsprintf(buf, L" %d %d %d %d", m_hClientEvent.handle(), m_hServerEvent.handle(), m_hSharedMemory.handle(), sharedMemorySize);
     QString conproxyPath = QCoreApplication::applicationDirPath() + QLatin1String("/conproxy.exe");
-    BOOL success = CreateProcess(conproxyPath.utf16(), buf, NULL, NULL, TRUE, dwCreationFlags, NULL, NULL, &si, &pi);
+    BOOL success = CreateProcess((WCHAR*)conproxyPath.utf16(), buf, NULL, NULL, TRUE, dwCreationFlags, NULL, NULL, &si, &pi);
     DWORD dwError;
     if (!success)
         dwError = GetLastError();

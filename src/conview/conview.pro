@@ -1,5 +1,5 @@
 TEMPLATE = app
-QT       += core gui
+QT       += core gui widgets
 
 TARGET = consolator
 DESTDIR = $$OUT_PWD/../../bin

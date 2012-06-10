@@ -7,5 +7,6 @@
 
 #include <QtCore>
 #include <QtGui>
+#include <QtWidgets>
 
 #endif // STDAFX_H
