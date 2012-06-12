@@ -218,50 +218,40 @@ void ConsoleView::onConsoleRegionUpdate(const COORD &regionStart, const COORD &r
 
     QPainter p(&m_pixmap);
     p.setFont(font());
-
-    // ### need to do an update for all regions with different char attributes
-    QRect r(translateBufferToWidget(clippedStart), translateBufferToWidget(clippedEnd));
-    p.fillRect(r, Qt::black);
-
-    // ### this is the wrong color
-    p.setPen(Qt::lightGray);
-
     QPoint textPos = translateBufferToWidget(clippedStart);
     textPos.ry() += m_fontMetrics.ascent();
     QString text;
     text.reserve(bufferSize.X);
     size_t rowOffset = 0;
     for (SHORT row = 0; row < bufferSize.Y; ++row) {
-        WORD charAttributes;
-        bool drawSegment = false;
+        WORD lastCharAttributes = buf[0].Attributes;
+        WORD charAttributes = buf[0].Attributes;
         SHORT startIdx = 0;
         const SHORT lastColumn = bufferSize.X - 1;
         const int origTextPosX = textPos.x();
 
         for (SHORT column = 0; column <= lastColumn; ++column) {
-            if (column == 0) {
-                charAttributes = buf[0].Attributes;
-            } else if (charAttributes != buf[column].Attributes) {
-                drawSegment = true;
-                charAttributes = buf[column].Attributes;
-            }
-
             if (column == lastColumn) {
-                drawSegment = true;
                 ++column;
+            } else if (charAttributes != buf[column].Attributes) {
+                lastCharAttributes = charAttributes;
+                charAttributes = buf[column].Attributes;
+            } else {
+                continue;
             }
 
-            if (drawSegment) {
-                text.resize(column - startIdx);
-                //text.clear(); //text.resize(0);
-                for (SHORT bufIdx = startIdx; bufIdx < column; ++bufIdx) {
-                    text[bufIdx - startIdx] = QChar(buf[bufIdx + rowOffset].Char.UnicodeChar);
-                    //text += QChar(buf[idx + rowOffset].Char.UnicodeChar);
-                }
-                p.drawText(textPos, text);
-                startIdx = column;
-                textPos.rx() += text.length() * m_charCellSize.width();
-            }
+            text.resize(column - startIdx);
+            for (SHORT bufIdx = startIdx; bufIdx < column; ++bufIdx)
+                text[bufIdx - startIdx] = QChar(buf[bufIdx + rowOffset].Char.UnicodeChar);
+
+            p.fillRect(
+                QRect(textPos.x(), textPos.y() - m_fontMetrics.ascent(),
+                      m_charCellSize.width() * text.length() + 1, m_charCellSize.height() + 1),
+                translateBackgroundColor(lastCharAttributes));
+            p.setPen(translateForegroundColor(lastCharAttributes));
+            p.drawText(textPos, text);
+            startIdx = column;
+            textPos.rx() += text.length() * m_charCellSize.width();
         }
 
         rowOffset += bufferSize.X;
