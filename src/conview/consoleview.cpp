@@ -270,12 +270,25 @@ void ConsoleView::onConsoleScrolled(long /*horizontalDistance*/, long /*vertical
 
 void ConsoleView::onConsoleSimpleUpdate(const COORD &pos, unsigned short utf16Char, unsigned short characterAttributes)
 {
+    Q_UNUSED(utf16Char);
+    Q_UNUSED(characterAttributes);
     QPoint widgetPos = translateBufferToWidget(pos);
 //    qDebug() << "onConsoleSimpleUpdate" << pos.X << pos.Y << "widget:" << widgetPos.x() << widgetPos.y();
+
+    // For some applications (e.g. vim) we get nonsense values in utf16Char.
+    // We must read the console buffer to check what's in there.
+    CHAR_INFO charInfo;
+    {
+        const COORD bufSize = {1, 1};
+        SMALL_RECT readRegion = { pos.X, pos.Y, pos.X, pos.Y };
+        if (!m_process->ipcReadConsoleOutput(&charInfo, bufSize, &readRegion))
+            qWarning("ipcReadConsoleOutput failed");
+    }
+
     QPainter p(&m_pixmap);
     p.setFont(font());
     p.setPen(translateForegroundColor(characterAttributes));
-    QString text = QString::fromUtf16(&utf16Char, 1);
+    QString text = QChar(charInfo.Char.UnicodeChar);
     QRect charRect(widgetPos.x(), widgetPos.y(), m_charCellSize.width() + 1, m_charCellSize.height() + 1);
     p.fillRect(charRect, translateBackgroundColor(characterAttributes));
 
