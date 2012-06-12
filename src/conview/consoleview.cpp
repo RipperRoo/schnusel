@@ -229,17 +229,45 @@ void ConsoleView::onConsoleRegionUpdate(const COORD &regionStart, const COORD &r
     QPoint textPos = translateBufferToWidget(clippedStart);
     textPos.ry() += m_fontMetrics.ascent();
     QString text;
+    text.reserve(bufferSize.X);
+    size_t rowOffset = 0;
     for (SHORT row = 0; row < bufferSize.Y; ++row) {
-        text.clear();
-        const size_t rowOffset = row * bufferSize.X;
-        for (SHORT column = 0; column < bufferSize.X; ++column) {
-            WCHAR *const wcharPtr = &buf[column + rowOffset].Char.UnicodeChar;
-            text.append(QString::fromWCharArray(wcharPtr, 1));
+        WORD charAttributes;
+        bool drawSegment = false;
+        SHORT startIdx = 0;
+        const SHORT lastColumn = bufferSize.X - 1;
+        const int origTextPosX = textPos.x();
+
+        for (SHORT column = 0; column <= lastColumn; ++column) {
+            if (column == 0) {
+                charAttributes = buf[0].Attributes;
+            } else if (charAttributes != buf[column].Attributes) {
+                drawSegment = true;
+                charAttributes = buf[column].Attributes;
+            }
+
+            if (column == lastColumn) {
+                drawSegment = true;
+                ++column;
+            }
+
+            if (drawSegment) {
+                text.resize(column - startIdx);
+                //text.clear(); //text.resize(0);
+                for (SHORT bufIdx = startIdx; bufIdx < column; ++bufIdx) {
+                    text[bufIdx - startIdx] = QChar(buf[bufIdx + rowOffset].Char.UnicodeChar);
+                    //text += QChar(buf[idx + rowOffset].Char.UnicodeChar);
+                }
+                p.drawText(textPos, text);
+                startIdx = column;
+                textPos.rx() += text.length() * m_charCellSize.width();
+            }
         }
-        p.drawText(textPos, text);
+
+        rowOffset += bufferSize.X;
+        textPos.rx() = origTextPosX;
         textPos.ry() += m_charCellSize.height();
     }
-
     delete[] buf;
 
     repaint();  // ### rect
